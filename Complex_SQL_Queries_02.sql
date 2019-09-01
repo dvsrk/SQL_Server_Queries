@@ -103,21 +103,101 @@ find all duplicate records
 /*
 Delete duplicate rows from the table
 */
---method 01
-;with cte as
-(
-	select id,name,salary, ROW_NUMBER() over (partition by id, name, salary order by id) as row_id
-	from emp
+	--method 01
+		;with cte as
+		(
+			select id,name,salary, ROW_NUMBER() over (partition by id, name, salary order by id) as row_id
+			from emp
 
-)
-delete from cte where row_id >1
+		)
+		delete from cte where row_id >1
 
---method 02
-set rowcount 1 
-delete from emp where id in(
-	select id 
-	from emp 
-	group by id, name, salary 
-	having count(*) > 1
-)
-set rowcount 0
+	--method 02
+		set rowcount 1 
+		delete from emp where id in(
+			select id 
+			from emp 
+			group by id, name, salary 
+			having count(*) > 1
+		)
+		set rowcount 0
+
+
+/*
+	Find second highest salary 
+*/
+
+	--method 01
+		select max(salary) from emp 
+		where salary not in (
+				select max(salary) from emp
+				)
+	
+	--method 02 (preferred, easy to get nth highest)
+		;with cte as
+		(
+			select id, name, salary, dense_rank() over (order by salary desc) as den_ran
+			from emp
+		)
+		select * from cte where den_ran = 2
+
+	--method 03 (tricky way) by using N-1 = N-1
+	select * from emp e1
+	where 2 = (select count(Salary)
+				from emp e2 
+				where e2.Salary > e1.Salary)
+
+/*
+Find max salary in each department
+*/
+
+	--Method 01
+	select dept_name, max(salary)
+		from emp
+		join dept on emp.dept_id = dept.id
+		group by dept_name
+
+/*
+show same record more than once in the result set
+*/
+	--method 01
+		select * from emp where emp.name='emp 1'
+		union all
+		select * from emp where emp.name='emp 1'
+
+/*
+random selects & outputs
+*/
+
+	select 1			--output 1
+	select '1'			--output 1
+	select count('1')	--output 1
+	select count(*)		--output 1
+	select count(*)+count(*) --output 2
+	select (select '#')	--output '#'
+	select select 'e'	--output 'syntax error'
+	select $			--output '0.00'
+	select null+1		--output null (any operation on null results in null value)
+	select null+'1'		--output null
+	select null/0		--output null
+	select sum(null)	--output 'error' (MIN, MAX, AVG, SUM won't accept null value as parameter)
+
+	
+/*
+ways of getting top records with out using top clause
+*/
+	--method 01
+		set rowcount 1
+			select * from emp order by ID
+			select * from dept
+		set rowcount 0
+
+	--method 02
+	;with cte as
+	(
+		select *, ROW_NUMBER() over(order by id) as row_id
+		from emp
+	)
+	select * from cte where row_id <4
+
+
