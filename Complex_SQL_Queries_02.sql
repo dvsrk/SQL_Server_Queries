@@ -75,6 +75,7 @@ List the employees with same salary
 		from emp e1
 		join emp e2 on e1.Salary = e2.Salary
 		where e1.ID != e2.ID
+		order by 2
 
 	--method 02
 		; with cte as
@@ -143,9 +144,8 @@ Delete duplicate rows from the table
 
 	--method 03 (tricky way) by using N-1 = N-1
 	select * from emp e1
-	where 2 = (select count(Salary)
-				from emp e2 
-				where e2.Salary > e1.Salary)
+	where (1) = (select count(distinct(Salary))	from emp e2 
+					where e2.Salary > e1.Salary)
 
 /*
 Find max salary in each department
@@ -182,7 +182,6 @@ random selects & outputs
 	select null/0		--output null
 	select sum(null)	--output 'error' (MIN, MAX, AVG, SUM won't accept null value as parameter)
 
-	
 /*
 ways of getting top records with out using top clause
 */
