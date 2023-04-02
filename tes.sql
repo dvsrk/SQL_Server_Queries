@@ -1,0 +1,1 @@
+﻿INSERT INTO slt (LanguageID, TextID, Text, Date_Modified) VALUES (56, 130, N'పేరు', getutcdate());
